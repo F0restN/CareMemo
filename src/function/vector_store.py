@@ -11,7 +11,7 @@ PGVECTOR_CONN = os.environ.get("PGVECTOR_CONN")
 
 
 def get_connection(connection: str, embedding_model: Embeddings, collection_name: str) -> PGVector:
-    """Get a connection to the vector store.
+    """Get a connection to the vector store. If connection does not exist, by default it will create one
 
     Args:
         connection: The connection string for the vector store.
@@ -98,11 +98,8 @@ def recall_memory(
 
     """
     if kb is None:
-        kb = get_connection(
-            connection=PGVECTOR_CONN,
-            embedding_model=get_nomic_embedding(),
-            collection_name="lstm_memory",
-        )
+        raise ValueError("KB can not be None")
+
     custom_filter = {"user_id": user_id}
     res_unfiltered: list[tuple[Document, float]] = kb.similarity_search_with_score(
         query=query,

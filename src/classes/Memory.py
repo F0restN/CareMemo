@@ -83,7 +83,7 @@ class BaseMemory(BaseModel):
 
 
 class MemoryItem(BaseMemory):
-    """Memory item for AI function calling."""
+    """Memory item for AI function calling. id, timestamp were auto generated, user_id, source are manually input and other are from BaseMemory"""
 
     id: int = Field(default_factory=lambda: uuid4().int, description="The unique identifier for the memory item")
     user_id: str = Field(..., description="The unique identifier for the user")

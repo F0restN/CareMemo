@@ -1,3 +1,9 @@
+.vscode/
+.idea/
+.cursor/
+.cursorignore
+
+
 .ruff_cache
 .venv
 .env
