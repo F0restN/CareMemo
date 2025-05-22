@@ -1,9 +1,11 @@
+import time
+
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage, AnyMessage
 from langchain_core.prompts import PromptTemplate
 
-from utils.llm_manager import _get_deepseek
-from utils.PROMPT import BASIC_PROMPT
+from utils.llm_manager import _get_deepseek, _get_llm
+from utils.PROMPT import BASIC_PROMPT, CONTRADICTION_CHECK_PROMPT
 
 
 def generate_answer_with_memory(
@@ -49,3 +51,28 @@ def generate_answer_with_memory(
         "stm_context": stm_context,
         "conversation_history": conversation_history,
     })
+
+def contradiction_check(sentence1: str, sentence2: str) -> bool:
+    """Check if two sentences are contradictory.
+    
+    Args:
+        sentence1: The first sentence
+        sentence2: The second sentence
+    """
+    
+    # Load the model
+    # llm = _get_llm("deepseek-r1:14b", temperature=0.3)
+    llm = _get_deepseek("deepseek-chat", temperature=0.3)
+    
+    prompt = PromptTemplate(
+        input_variables=["sentence1", "sentence2"],
+        template=CONTRADICTION_CHECK_PROMPT,
+    )
+    
+    res = llm.invoke(prompt.format(sentence1=sentence1, sentence2=sentence2))
+    
+    return res.content.upper() == "YES"
+
+
+if __name__ == "__main__":
+    print(contradiction_check("My dad seems forgetting things more frequently than before.", "My dad is getting better so far."))

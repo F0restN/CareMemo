@@ -182,3 +182,13 @@ Here is the prior conversation:
 
 {conversation}
 """
+
+CONTRADICTION_CHECK_PROMPT = """
+You are a helpful assistant that checks if two sentences are contradictory. Which means the fact in one sentence is the opposite of the fact in the other sentence. They made different statements about the same thing, that is contradictory.
+
+Here are the two sentences:
+sentence1: {sentence1}
+sentence2: {sentence2}
+
+If the two sentences are contradictory, return "YES". Otherwise, return "NO". Do not include any text outside the string "YES" or "NO" in your response.
+"""

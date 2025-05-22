@@ -2,8 +2,15 @@ import os
 from typing import TYPE_CHECKING
 
 from langchain_core.prompts import PromptTemplate
+from langchain_postgres import PGVector
 
-from classes.Memory import BaseEpisodicMemory, BaseMemory
+from classes.Memory import BaseEpisodicMemory, BaseMemory, MemoryItem
+from function.vector_store import (
+    add_to_memory,
+    similarity_search,
+    update_memory,
+)
+from utils.contradictory_detect import ContradictionDetector
 from utils.llm_manager import _get_deepseek
 from utils.PROMPT import (
     EPISODIC_MEMORY_PROMPT_TEMPLATE,
@@ -12,6 +19,7 @@ from utils.PROMPT import (
 )
 
 if TYPE_CHECKING:
+    from langchain_core.documents import Document
     from langchain_core.messages import AIMessage
 
 PGVECTOR_CONN = os.environ.get("PGVECTOR_CONN")
@@ -86,10 +94,36 @@ def summarize_episodicM_from_conversation(conversation: str) -> BaseEpisodicMemo
     return structured_llm.invoke({"conversation": conversation})
 
 
+def classify_operation(query: str, user_id: str, new_memory: MemoryItem, kb: PGVector = None) -> str | MemoryItem:
+    """Classify the operation of the user's query."""
+    if new_memory.metadata["level"] == "STM":
+        return "APPEND"
+
+    premise_memory: list[Document] = similarity_search(query=query, user_id=user_id, kb=kb, score=0.2, k=1)
+
+    print(f"<AI Internal>: Premise Memories are {premise_memory}")
+
+    if premise_memory is not None and len(premise_memory) > 0:
+        contradiction_detector = ContradictionDetector(model_name="nomic-ai/nomic-embed-text-v2-moe")
+        if contradiction_detector.detect_contradiction_contrast(new_memory.convert_to_sentence(), premise_memory.page_content)["is_contradiction"]:
+            update_memory(
+                premise_memory=premise_memory[0],
+                new_memory=new_memory,
+                kb=kb,
+            )
+            return "UPDATED"
+
+    add_to_memory(
+        memory=new_memory,
+        kb=kb,
+    )
+    return "ADDED"
+
+
 if __name__ == "__main__":
 
     user_query = "Can you recommend activities that are suitable for someonewith dementia to engage in and enjoy?"
 
-    res = summarize_lstm_from_query(user_query)
+    res: BaseMemory = summarize_lstm_from_query(user_query)
 
     print(res)
