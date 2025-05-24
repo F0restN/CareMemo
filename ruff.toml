@@ -47,6 +47,13 @@ ignore = [
     "TD002",
     "TD003",
     "FIX002",
+
+    # Error
+    "EM102",
+    "TRY003",
+    "B904",
+    "EM101",
+    "BLE001"
 ]
 
 [lint.flake8-quotes]

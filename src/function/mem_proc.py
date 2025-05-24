@@ -70,9 +70,6 @@ def memory_extract_decision(query: str) -> bool:
 def summarize_lstm_from_query(query: str) -> BaseMemory:
     """Summarize the user's query into a memory item."""
     llm = _get_deepseek("deepseek-chat", temperature=0.0)
-
-    # TODO: must well define the prompt to make it work, currently, it just extract some useless information
-
     prompt = PromptTemplate.from_template(MEMORY_SUMMARIZATION_PROMPT)
     structured_llm = prompt | llm.with_structured_output(
         schema=BaseMemory, method="function_calling", include_raw=False)
@@ -85,9 +82,6 @@ def summarize_lstm_from_query(query: str) -> BaseMemory:
 def summarize_episodicM_from_conversation(conversation: str) -> BaseEpisodicMemory:  # noqa: N802
     """Summarize the conversation into a episodic memory."""
     llm = _get_deepseek("deepseek-chat", temperature=0.0)
-
-    # TODO: must well define the prompt to make it work, currently, it just extract some useless information
-
     prompt = PromptTemplate.from_template(EPISODIC_MEMORY_PROMPT_TEMPLATE)
     structured_llm = prompt | llm.with_structured_output(
         schema=BaseEpisodicMemory, method="function_calling", include_raw=False)
